@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="#0B1B3A" stroke="#2F6BFF" stroke-width="2.5"/>
+  <!-- 4 siku scan cyan -->
+  <path d="M16 24V18C16 16.8954 16.8954 16 18 16H24" stroke="#22D3EE" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M40 16H46C47.1046 16 48 16.8954 48 18V24" stroke="#22D3EE" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M16 40V46C16 47.1046 16.8954 48 18 48H24" stroke="#22D3EE" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M40 48H46C47.1046 48 48 47.1046 48 46V40" stroke="#22D3EE" stroke-width="3.2" stroke-linecap="round"/>
+  <!-- Silang X biru elektrik -->
+  <path d="M23 23L41 41M41 23L23 41" stroke="url(#axg)" stroke-width="6" stroke-linecap="round"/>
+  <!-- Titik tengah hijau mint -->
+  <circle cx="32" cy="32" r="3" fill="#10D9A0"/>
+  <defs>
+    <linearGradient id="axg" x1="20" y1="20" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2F6BFF"/>
+      <stop offset="1" stop-color="#22D3EE"/>
+    </linearGradient>
+  </defs>
+</svg>

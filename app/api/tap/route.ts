@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
 
   const { data: sekolah } = await admin
     .from("sekolah")
-    .select("timezone, bobot_halte, bobot_gerbang")
+    .select("timezone")
     .eq("id", reader.sekolah_id)
     .single();
   const tz = sekolah?.timezone ?? TZ_DEFAULT;
@@ -75,7 +75,6 @@ export async function POST(req: NextRequest) {
   if (!aturan || !aturan.aktif) return fail("NOT_SCHOOL_DAY", 422, { nama: siswa.nama });
 
   const status = computeStatus(local.time, aturan.tenggat_absensi);
-  const bobot = reader.lokasi === "halte" ? (sekolah?.bobot_halte ?? 10) : (sekolah?.bobot_gerbang ?? 2);
 
   const { error } = await admin.from("kehadiran").insert({
     sekolah_id: reader.sekolah_id,
@@ -83,8 +82,7 @@ export async function POST(req: NextRequest) {
     reader_id: reader.id,
     tanggal: local.date,
     jam_tap: tapAt.toISOString(),
-    lokasi: reader.lokasi,
-    bobot_eco: bobot,
+    lokasi: "gerbang",
     status,
   });
 
@@ -101,7 +99,7 @@ export async function POST(req: NextRequest) {
         duplicate: true,
         nama: siswa.nama,
         status: existing?.status ?? status,
-        lokasi: existing?.lokasi ?? reader.lokasi,
+        lokasi: "gerbang",
       });
     }
     return fail("DB_ERROR", 500, { message: error.message });
@@ -112,8 +110,7 @@ export async function POST(req: NextRequest) {
     nama: siswa.nama,
     kelas: siswa.kelas,
     status,
-    lokasi: reader.lokasi,
-    bobot,
+    lokasi: "gerbang",
     jam: local.time.slice(0, 5),
   });
 }

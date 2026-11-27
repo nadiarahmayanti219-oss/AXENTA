@@ -10,7 +10,7 @@ import type { Kehadiran } from "@/lib/types";
 
 export function StatusCell({ status, record, tz }: { status: CellStatus; record?: Kehadiran; tz: string }) {
   const title = record
-    ? `${STATUS_LABEL[status]} · ${formatTime(record.jam_tap, tz)} · ${record.lokasi === "halte" ? "Halte" : "Gerbang"}`
+    ? `${STATUS_LABEL[status]} · ${formatTime(record.jam_tap, tz)} · Gerbang Utama`
     : STATUS_LABEL[status];
   if (status === "kosong") return <span className="text-subtle" title={title}>-</span>;
   const cls = {

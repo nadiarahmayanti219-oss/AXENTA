@@ -1,12 +1,12 @@
 "use client";
 
-import { AlertTriangle, CalendarDays, Clock, Leaf, Users } from "lucide-react";
+import { AlertTriangle, CalendarDays, Clock, ShieldCheck, Users } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/app-shell";
 import { useApp } from "@/components/providers/app-provider";
-import { AttendanceDonut, WeeklyLocationChart, type WeeklyPoint } from "@/components/dashboard/charts";
-import { EcoLeaderboard, TapDistributionCard } from "@/components/dashboard/eco";
+import { AttendanceDonut, WeeklyGateChart, type WeeklyPoint } from "@/components/dashboard/charts";
+import { GateSummaryCard, PunctualityLeaderboard } from "@/components/dashboard/eco";
 import { RecentActivityTable } from "@/components/dashboard/recent-activity";
 import { HeroStatCard, StatCard } from "@/components/dashboard/stat-cards";
 import { useRealtime } from "@/hooks/use-realtime";
@@ -52,7 +52,9 @@ export default function DashboardPage() {
         loadAturan(sb),
         loadKehadiranMonth(sb, ym),
         isSupabaseConfigured()
-          ? sb.from("kehadiran").select("*, siswa:siswa_id (nama, kelas)").order("jam_tap", { ascending: false }).limit(10)
+          ? Promise.resolve(
+              sb.from("kehadiran").select("*, siswa:siswa_id (nama, kelas)").order("jam_tap", { ascending: false }).limit(10),
+            ).catch(() => ({ data: [] }))
           : Promise.resolve({ data: [] }),
       ]);
       setSiswa(s);
@@ -64,7 +66,7 @@ export default function DashboardPage() {
         if (fresh.length) {
           setHighlight(new Set(fresh.map((x) => x.id)));
           const f = fresh[0];
-          toast.success(`Tap baru: ${f.siswa?.nama ?? "Siswa"} — ${f.status === "tepat_waktu" ? "Tepat Waktu" : "Telat"}`);
+          toast.success(`Tap baru di Gerbang Utama: ${f.siswa?.nama ?? "Siswa"} — ${f.status === "tepat_waktu" ? "Tepat Waktu" : "Telat"}`);
         }
       }
       recentIds.current = new Set(recentRows.map((x) => x.id));
@@ -107,22 +109,22 @@ export default function DashboardPage() {
   }, [aturan]);
 
   const todayRecs = kehadiran.filter((k) => k.tanggal === today);
-  const halteToday = todayRecs.filter((k) => k.lokasi === "halte").length;
-  const gerbangToday = todayRecs.length - halteToday;
+  const tepatToday = todayRecs.filter((k) => k.status === "tepat_waktu").length;
+  const telatToday = todayRecs.length - tepatToday;
 
   const weekly: WeeklyPoint[] = weekDates.map((d) => {
     const recs = weeklyRaw.filter((k) => k.tanggal === d);
     return {
       date: d,
       label: `${HARI_SHORT[hariOf(d)]} ${Number(d.slice(8))}`,
-      halte: recs.filter((k) => k.lokasi === "halte").length,
-      gerbang: recs.filter((k) => k.lokasi === "gerbang").length,
+      tepat: recs.filter((k) => k.status === "tepat_waktu").length,
+      telat: recs.filter((k) => k.status === "telat").length,
     };
   });
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Dashboard Kehadiran" subtitle="Pantau ketepatan waktu dan aktivitas kehadiran siswa secara real-time." />
+      <PageHeader title="Dashboard Kehadiran AXENTA" subtitle="Pantau ketepatan waktu dan aktivitas kehadiran siswa di Gerbang Utama secara real-time." />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <HeroStatCard icon={<Users className="h-5 w-5" />} badge="Aktif" label="Total Siswa Terpantau" value={siswa.length} loading={loading} />
@@ -148,19 +150,19 @@ export default function DashboardPage() {
 
       <div className="pt-2">
         <h2 className="flex items-center gap-2 text-lg font-bold text-ink">
-          <Leaf className="h-5 w-5 text-success" />
-          Analisis Asesmen Karakter Lingkungan (Eco-Awareness)
+          <ShieldCheck className="h-5 w-5 text-primary" />
+          Monitoring Kehadiran Gerbang Utama Sekolah
         </h2>
-        <p className="mt-0.5 text-xs text-muted">Indikator estimasi kepedulian lingkungan berdasarkan lokasi tap NFC siswa.</p>
+        <p className="mt-0.5 text-xs text-muted">Ringkasan ketepatan waktu siswa yang melakukan tap NFC di Gerbang Utama.</p>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-12">
         <div className="space-y-6 xl:col-span-5">
-          <TapDistributionCard halte={halteToday} gerbang={gerbangToday} total={todayRecs.length} />
-          <EcoLeaderboard students={stats.students} />
+          <GateSummaryCard tepat={tepatToday} telat={telatToday} total={todayRecs.length} />
+          <PunctualityLeaderboard students={stats.students} />
         </div>
         <div className="xl:col-span-7">
-          <WeeklyLocationChart data={weekly} order={order} onOrderChange={setOrder} />
+          <WeeklyGateChart data={weekly} order={order} onOrderChange={setOrder} />
         </div>
       </div>
     </div>

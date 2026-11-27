@@ -27,8 +27,6 @@ export interface StudentMonth {
   telat: number;
   absen: number;
   pctTW: number;
-  eco: number;
-  halte: number;
   gerbang: number;
   cells: Record<string, { status: CellStatus; record?: Kehadiran }>;
 }
@@ -73,16 +71,14 @@ export function buildMonthStats(
 
   const students: StudentMonth[] = siswa.map((s) => {
     const recs = byStudent.get(s.id) ?? new Map<string, Kehadiran>();
-    let tepat = 0, telat = 0, absen = 0, eco = 0, halte = 0, gerbang = 0;
+    let tepat = 0, telat = 0, absen = 0, gerbang = 0;
     const cells: StudentMonth["cells"] = {};
     for (const d of days) {
       const r = recs.get(d.date);
       if (r) {
         if (r.status === "tepat_waktu") tepat++;
         else telat++;
-        eco += r.bobot_eco;
-        if (r.lokasi === "halte") halte++;
-        else gerbang++;
+        gerbang++;
         cells[d.date] = { status: r.status, record: r };
       } else if (d.date <= today && activeDatesWithTap.has(d.date)) {
         absen++;
@@ -98,7 +94,7 @@ export function buildMonthStats(
     totalAbsen += absen;
     sumPct += pctTW;
     if (telat >= 3) seringTelat++;
-    return { siswa: s, tepat, telat, absen, pctTW, eco, halte, gerbang, cells };
+    return { siswa: s, tepat, telat, absen, pctTW, gerbang, cells };
   });
 
   return {

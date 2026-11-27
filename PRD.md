@@ -7,12 +7,9 @@
 
 ## 1. Ringkasan Produk
 
-**AXENTA (Automated Experience for Entry and Attendance)** adalah sistem absensi siswa berbasis **NFC** yang tidak hanya mencatat **ketepatan waktu** kehadiran, tetapi juga menilai **karakter kepedulian lingkungan (Eco-Awareness)** siswa berdasarkan **lokasi tap**:
+**AXENTA (Automated Experience for Entry and Attendance)** adalah sistem absensi siswa berbasis **NFC** di **Gerbang Utama Sekolah** yang mencatat kehadiran serta **ketepatan waktu** siswa secara otomatis dan real-time.
 
-- **Tap di Halte** (titik bus sekolah) → diasumsikan siswa memakai transportasi umum/bus sekolah → **Rendah Emisi**.
-- **Tap di Gerbang** → diasumsikan siswa diantar kendaraan pribadi → **Potensi Emisi Tinggi**.
-
-Data dikirim oleh perangkat **NodeMCU ESP8266 + NFC Reader** ke backend **Next.js**, disimpan di **Supabase (PostgreSQL)**, dan ditampilkan secara **real-time** pada dashboard web untuk guru/admin sekolah.
+Data dikirim oleh perangkat **NodeMCU ESP8266 + NFC Reader (RC522) + LCD I2C + ESP32-CAM** di Gerbang Utama ke backend **Next.js**, disimpan di **Supabase (PostgreSQL)**, dan ditampilkan secara **real-time** pada dashboard web untuk guru/admin sekolah.
 
 ## 2. Latar Belakang & Masalah
 
@@ -30,7 +27,7 @@ Data dikirim oleh perangkat **NodeMCU ESP8266 + NFC Reader** ke backend **Next.j
 | Absensi otomatis & cepat | Waktu tap → tercatat di dashboard **< 2 detik** |
 | Akurasi data | ≥ 99% tap tercatat tanpa duplikasi |
 | Mengurangi beban rekap | Export rekap bulanan ke Excel **1 klik** |
-| Mengukur eco-awareness | Persentase tap halte vs gerbang tersedia harian & mingguan |
+| Monitoring ketepatan waktu | Persentase tap tepat waktu vs terlambat di Gerbang Utama tersedia harian & mingguan |
 | Pembinaan siswa telat | Daftar siswa telat ≥ 3 hari/bulan otomatis |
 
 ## 4. Pengguna (Persona)
@@ -39,8 +36,8 @@ Data dikirim oleh perangkat **NodeMCU ESP8266 + NFC Reader** ke backend **Next.j
 |---|---|
 | **Admin / Operator Sekolah** | Kelola data siswa, aturan jam, perangkat, reset data |
 | **Guru / Wali Kelas** | Pantau kehadiran & rekap kelas, export laporan |
-| **Kepala Sekolah** | Lihat ringkasan & tren karakter siswa |
-| **Siswa** (pengguna perangkat) | Tap kartu NFC di halte/gerbang, mendapat feedback cepat (bunyi/LED) |
+| **Kepala Sekolah** | Lihat ringkasan & tren kehadiran siswa |
+| **Siswa** (pengguna perangkat) | Tap kartu NFC di Gerbang Utama Sekolah, mendapat feedback cepat (LCD/buzzer) |
 
 ## 5. Tech Stack
 
@@ -61,12 +58,9 @@ Data dikirim oleh perangkat **NodeMCU ESP8266 + NFC Reader** ke backend **Next.j
 ```mermaid
 flowchart LR
     subgraph Lapangan
-        H["NodeMCU ESP8266 + RC522 (Halte)"]
-        G["NodeMCU ESP8266 + RC522 (Gerbang)"]
+        G["NodeMCU ESP8266 + RC522 (Gerbang Utama)"]
     end
-    H -- "HTTPS POST /api/tap (x-device-key)" --> API
     G -- "HTTPS POST /api/tap (x-device-key)" --> API
-    H -- "POST /api/heartbeat" --> API
     G -- "POST /api/heartbeat" --> API
     subgraph Vercel
         API["Next.js Route Handlers"]
@@ -106,10 +100,10 @@ flowchart LR
 | F-DB-4 | **Kartu Hari Sekolah Bulan Ini** (badge "Sen–Jum") — jumlah hari efektif berdasarkan aturan jam aktif. |
 | F-DB-5 | **Distribusi Kehadiran** — donut chart bulan berjalan: Tepat Waktu, Telat, Absen (% + total di tengah). |
 | F-DB-6 | **Aktivitas Terbaru** — tabel 10 tap terakhir (Siswa, Kelas, Lokasi & Bobot, Jam Tap, Tanggal, Status), real-time, link "Lihat Semua Data". |
-| F-DB-7 | **Sebaran Titik Tap Hari Ini** — jumlah & % siswa tap di Halte (Rendah Emisi) vs Gerbang (Potensi Tinggi), dengan progress bar. |
-| F-DB-8 | **Box Metodologi Estimasi** — penjelasan asumsi halte vs gerbang. |
-| F-DB-9 | **Leaderboard Skor Eco Siswa** — top 10 siswa berdasarkan akumulasi bobot eco bulan ini; empty state "Belum ada data absensi siswa." |
-| F-DB-10 | **Tren Lokasi Tap Mingguan** — grouped bar chart 5 hari sekolah terakhir (Halte vs Gerbang), dropdown urutan "Tanggal (Lama → Baru)" / "(Baru → Lama)". |
+| F-DB-7 | **Ringkasan Tap Gerbang Utama Hari Ini** — jumlah & % siswa tap Tepat Waktu vs Terlambat di Gerbang Utama, dengan progress bar. |
+| F-DB-8 | **Box Info Gerbang Utama** — informasi pembacaan perangkat `RDR-GERBANG-01`. |
+| F-DB-9 | **Siswa Paling Tepat Waktu** — top 10 siswa berdasarkan kehadiran tepat waktu bulan ini; empty state "Belum ada data absensi siswa." |
+| F-DB-10 | **Tren Kehadiran Mingguan (Gerbang Utama)** — grouped bar chart 5 hari sekolah terakhir (Tepat Waktu vs Telat), dropdown urutan "Tanggal (Lama → Baru)" / "(Baru → Lama)". |
 
 ### 7.4 Rekap Kehadiran (`/rekap`)
 | ID | Kebutuhan |
@@ -150,9 +144,8 @@ flowchart LR
 | F-PG-1 | **Manajemen Basis Data** — kartu "Pembersihan Data Kehadiran (Reset Database)" (zona bahaya). |
 | F-PG-2 | Opsi hapus **per bulan** atau **Reset Total** (setara `TRUNCATE TABLE kehadiran`), dengan konfirmasi mengetik kata `HAPUS`. Data master siswa & sekolah tidak terpengaruh. |
 | F-PG-3 | **Status Koneksi Supabase** — indikator koneksi aktif & sinkronisasi tabel Siswa, Kehadiran, NfcReader, Sekolah. |
-| F-PG-4 | **Manajemen NFC Reader** — daftar perangkat (kode, lokasi Halte/Gerbang, bobot eco, status, last seen), tambah reader & generate device key. |
+| F-PG-4 | **Manajemen NFC Reader** — daftar perangkat Gerbang Utama (kode, lokasi Gerbang Utama, status, last seen), tambah reader & generate device key. |
 | F-PG-5 | **Profil Sekolah** — nama sekolah, zona waktu (default `Asia/Jakarta`). |
-| F-PG-6 | **Bobot Eco** — atur bobot poin per tipe lokasi (default Halte = 10, Gerbang = 2). |
 
 ### 7.8 Firmware NodeMCU ESP8266
 | ID | Kebutuhan |
@@ -196,8 +189,6 @@ erDiagram
         uuid id PK
         text nama
         text timezone
-        int bobot_halte
-        int bobot_gerbang
         timestamptz created_at
     }
     profil {
@@ -221,7 +212,7 @@ erDiagram
         uuid sekolah_id FK
         text kode "UNIQUE"
         text nama
-        text lokasi "halte | gerbang"
+        text lokasi "gerbang"
         text device_key_hash
         bool mode_registrasi
         text last_uid
@@ -241,8 +232,7 @@ erDiagram
         uuid reader_id FK
         date tanggal
         timestamptz jam_tap
-        text lokasi "halte | gerbang"
-        int bobot_eco
+        text lokasi "gerbang"
         text status "tepat_waktu | telat"
         timestamptz created_at
     }
@@ -271,10 +261,10 @@ erDiagram
 **Contoh `POST /api/tap`**
 ```json
 // Request
-{ "uid": "8159FF7B", "reader": "RDR-HALTE-01", "ts": "2026-11-16T06:45:12+07:00" }
+{ "uid": "8159FF7B", "reader": "RDR-GERBANG-01", "ts": "2026-11-16T06:45:12+07:00" }
 
 // Response 200
-{ "ok": true, "nama": "Ahmad Rasyid", "status": "tepat_waktu", "lokasi": "halte", "bobot": 10 }
+{ "ok": true, "nama": "Ahmad Rasyid", "status": "tepat_waktu", "lokasi": "gerbang" }
 
 // Response 200 (sudah tap hari ini)
 { "ok": true, "duplicate": true, "nama": "Ahmad Rasyid" }
@@ -291,7 +281,6 @@ Jika reader dalam `mode_registrasi = true`, tap tidak dicatat sebagai kehadiran,
 - **Rata-rata ketepatan waktu** = rata-rata % TW seluruh siswa aktif.
 - **Siswa sering telat** = siswa dengan jumlah telat ≥ 3 di bulan berjalan.
 - **Hari sekolah bulan ini** = jumlah tanggal di bulan berjalan yang harinya `aktif` di `aturan_jam`.
-- **Skor Eco** = Σ `bobot_eco` per siswa per bulan (Halte = 10, Gerbang = 2; dapat diubah).
 
 ## 11. Kebutuhan Non-Fungsional
 
@@ -330,7 +319,7 @@ axenta/
 │  ├─ attendance.ts             # logika status & statistik
 │  └─ excel.ts
 ├─ supabase/migrations/*.sql
-├─ firmware/umca_reader/umca_reader.ino
+├─ firmware/axenta_reader/axenta_reader.ino
 └─ middleware.ts
 ```
 
@@ -355,6 +344,5 @@ axenta/
 | Risiko | Mitigasi |
 |---|---|
 | Wi-Fi sekolah tidak stabil | Offline buffer LittleFS + retry |
-| Kartu dipinjamkan antar siswa (titip absen) | Catat log, opsi kamera/foto di versi berikutnya |
-| Asumsi halte = rendah emisi tidak selalu benar | Tampilkan sebagai "estimasi" + box metodologi |
-| Waktu perangkat tidak akurat | Server menggunakan waktu server sebagai sumber utama, NTP di perangkat untuk buffer offline |
+| Kartu dipinjamkan antar siswa (titip absen) | Catat log & ambil foto via ESP32-CAM saat tap |
+| Waktu perangkat tidak akurat | Server menggunakan waktu server sebagai sumber utama |

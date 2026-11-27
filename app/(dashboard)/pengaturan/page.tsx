@@ -19,7 +19,7 @@ import { cn } from "@/lib/cn";
 import { errMsg, loadReaders } from "@/lib/data";
 import { createClient } from "@/lib/supabase/client";
 import { currentMonth, timeAgo } from "@/lib/time";
-import type { Lokasi, NfcReader } from "@/lib/types";
+import type { NfcReader } from "@/lib/types";
 
 export default function PengaturanPage() {
   const { sekolah, isAdmin } = useApp();
@@ -30,11 +30,9 @@ export default function PengaturanPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [newKey, setNewKey] = useState<{ kode: string; key: string } | null>(null);
 
-  // Form profil sekolah & bobot eco
+  // Form profil sekolah
   const [namaSekolah, setNamaSekolah] = useState(sekolah.nama);
   const [tz, setTz] = useState(sekolah.timezone);
-  const [bobotHalte, setBobotHalte] = useState(sekolah.bobot_halte);
-  const [bobotGerbang, setBobotGerbang] = useState(sekolah.bobot_gerbang);
   const [savingSekolah, setSavingSekolah] = useState(false);
 
   useTick(15_000);
@@ -60,8 +58,6 @@ export default function PengaturanPage() {
       .update({
         nama: namaSekolah.trim(),
         timezone: tz,
-        bobot_halte: Number(bobotHalte),
-        bobot_gerbang: Number(bobotGerbang),
       })
       .eq("id", sekolah.id);
     setSavingSekolah(false);
@@ -96,7 +92,7 @@ export default function PengaturanPage() {
 
   return (
     <div className="max-w-3xl space-y-6">
-      <PageHeader title="Pengaturan Sistem" subtitle="Konfigurasi sistem, pemeliharaan basis data, dan preferensi akun." />
+      <PageHeader title="Pengaturan Sistem AXENTA" subtitle="Konfigurasi perangkat NFC Gerbang Utama, pemeliharaan basis data, dan profil sekolah." />
 
       {/* Manajemen Basis Data */}
       <Card className="p-6">
@@ -164,8 +160,8 @@ export default function PengaturanPage() {
               <Cpu className="h-5 w-5" />
             </IconCircle>
           }
-          title="Perangkat NFC Reader (NodeMCU ESP8266)"
-          subtitle="Daftarkan perangkat di halte & gerbang, lalu salin device key ke firmware."
+          title="Perangkat NFC Reader Gerbang Utama (NodeMCU ESP8266)"
+          subtitle="Kelola perangkat reader di Gerbang Utama Sekolah, lalu salin device key ke firmware."
           action={
             isAdmin && (
               <Button size="sm" onClick={() => setAddOpen(true)}>
@@ -181,7 +177,7 @@ export default function PengaturanPage() {
               <tr className="border-b border-line text-subtle">
                 <th className="overline py-2.5 pr-3">Kode</th>
                 <th className="overline py-2.5 pr-3">Nama</th>
-                <th className="overline py-2.5 pr-3">Lokasi & Bobot</th>
+                <th className="overline py-2.5 pr-3">Titik Lokasi</th>
                 <th className="overline py-2.5 pr-3">Status</th>
                 <th className="overline py-2.5 pr-3">Terakhir Aktif</th>
                 {isAdmin && <th className="overline py-2.5 text-right">Aksi</th>}
@@ -190,13 +186,12 @@ export default function PengaturanPage() {
             <tbody className="divide-y divide-line">
               {readers.map((r) => {
                 const online = isReaderOnline(r);
-                const bobot = r.lokasi === "halte" ? sekolah.bobot_halte : sekolah.bobot_gerbang;
                 return (
                   <tr key={r.id}>
                     <td className="py-3 pr-3 font-mono text-xs font-semibold text-ink">{r.kode}</td>
                     <td className="py-3 pr-3 text-ink">{r.nama}</td>
                     <td className="py-3 pr-3">
-                      <LokasiChip lokasi={r.lokasi} bobot={bobot} />
+                      <LokasiChip />
                     </td>
                     <td className="py-3 pr-3">
                       <span className="inline-flex items-center gap-1.5 text-xs">
@@ -223,11 +218,11 @@ export default function PengaturanPage() {
               })}
             </tbody>
           </table>
-          {readers.length === 0 && <EmptyState>Belum ada perangkat NFC Reader.</EmptyState>}
+          {readers.length === 0 && <EmptyState>Belum ada perangkat NFC Reader Gerbang Utama.</EmptyState>}
         </div>
       </Card>
 
-      {/* Profil Sekolah & Bobot Eco */}
+      {/* Profil Sekolah */}
       <Card className="p-6">
         <CardHeader
           icon={
@@ -235,8 +230,8 @@ export default function PengaturanPage() {
               <School className="h-5 w-5" />
             </IconCircle>
           }
-          title="Profil Sekolah & Bobot Eco-Awareness"
-          subtitle="Nama sekolah di topbar, zona waktu absensi, dan poin per lokasi tap."
+          title="Profil Sekolah"
+          subtitle="Nama sekolah di topbar dan zona waktu absensi."
         />
         <form onSubmit={saveSekolah} className="mt-5 space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -251,14 +246,6 @@ export default function PengaturanPage() {
                 <option value="Asia/Makassar">WITA — Asia/Makassar (GMT+8)</option>
                 <option value="Asia/Jayapura">WIT — Asia/Jayapura (GMT+9)</option>
               </Select>
-            </div>
-            <div>
-              <Label htmlFor="bobot-halte">Bobot Tap Halte (Rendah Emisi)</Label>
-              <Input id="bobot-halte" type="number" min={0} max={100} disabled={!isAdmin} value={bobotHalte} onChange={(e) => setBobotHalte(Number(e.target.value))} />
-            </div>
-            <div>
-              <Label htmlFor="bobot-gerbang">Bobot Tap Gerbang (Potensi Tinggi)</Label>
-              <Input id="bobot-gerbang" type="number" min={0} max={100} disabled={!isAdmin} value={bobotGerbang} onChange={(e) => setBobotGerbang(Number(e.target.value))} />
             </div>
           </div>
           {isAdmin && (
@@ -310,7 +297,7 @@ export default function PengaturanPage() {
             </div>
             <p className="text-xs text-muted">
               Masukkan ke konstanta <code>DEVICE_KEY</code> dan <code>READER_CODE = &quot;{newKey.kode}&quot;</code> pada{" "}
-              <code>firmware/umca_reader/umca_reader.ino</code>.
+              <code>firmware/axenta_reader/axenta_reader.ino</code>.
             </p>
           </div>
         )}
@@ -328,9 +315,8 @@ function AddReaderDialog({
   onClose: () => void;
   onCreated: (kode: string, key: string) => void;
 }) {
-  const [kode, setKode] = useState("RDR-HALTE-01");
-  const [nama, setNama] = useState("Reader Halte Bus Sekolah");
-  const [lokasi, setLokasi] = useState<Lokasi>("halte");
+  const [kode, setKode] = useState("RDR-GERBANG-01");
+  const [nama, setNama] = useState("Reader Gerbang Utama");
   const [loading, setLoading] = useState(false);
 
   async function submit(e: React.FormEvent) {
@@ -339,7 +325,7 @@ function AddReaderDialog({
     const res = await fetch("/api/reader", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kode, nama, lokasi }),
+      body: JSON.stringify({ kode, nama, lokasi: "gerbang" }),
     });
     const json = await res.json().catch(() => ({}));
     setLoading(false);
@@ -354,7 +340,7 @@ function AddReaderDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title="Tambah Perangkat NFC Reader"
+      title="Tambah Perangkat NFC Reader Gerbang Utama"
       footer={
         <>
           <Button variant="outline" onClick={onClose}>
@@ -377,10 +363,7 @@ function AddReaderDialog({
         </div>
         <div>
           <Label htmlFor="lok">Titik Lokasi</Label>
-          <Select id="lok" value={lokasi} onChange={(e) => setLokasi(e.target.value as Lokasi)} className="h-10 w-full">
-            <option value="halte">Halte (Rendah Emisi)</option>
-            <option value="gerbang">Gerbang (Potensi Emisi Tinggi)</option>
-          </Select>
+          <Input id="lok" disabled value="Gerbang Utama Sekolah" />
         </div>
       </form>
     </Dialog>

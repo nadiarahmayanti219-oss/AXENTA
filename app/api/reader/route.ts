@@ -14,7 +14,7 @@ const createSchema = z.object({
     .max(40)
     .regex(/^[A-Za-z0-9_-]+$/, "Kode hanya huruf, angka, - dan _"),
   nama: z.string().trim().min(1).max(80),
-  lokasi: z.enum(["halte", "gerbang"]),
+  lokasi: z.enum(["gerbang"]).default("gerbang"),
 });
 
 /** Buat reader baru. Device key plaintext hanya dikembalikan SEKALI. */
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
       sekolah_id: r.ctx.profil.sekolah_id,
       kode: parsed.data.kode.toUpperCase(),
       nama: parsed.data.nama,
-      lokasi: parsed.data.lokasi,
+      lokasi: "gerbang",
       device_key_hash: hashKey(key),
     })
     .select(READER_COLS)

@@ -9,8 +9,7 @@ export const COLORS = {
   tepat: "#15803D",
   telat: "#F59E0B",
   absen: "#94A3B8",
-  halte: "#15803D",
-  gerbang: "#DC2626",
+  gerbang: "#2563EB",
   grid: "#EEF2F7",
   axis: "#94A3B8",
   primary: "#2563EB",
@@ -37,7 +36,7 @@ export function AttendanceDonut({ tepat, telat, absen }: { tepat: number; telat:
 
   return (
     <Card className="flex flex-col justify-between p-6">
-      <CardHeader title="Distribusi Kehadiran" subtitle="Ringkasan status bulan berjalan" />
+      <CardHeader title="Distribusi Kehadiran" subtitle="Ringkasan status bulan berjalan di Gerbang Utama" />
       <div className="relative mx-auto my-6 flex h-56 w-56 shrink-0 items-center justify-center">
         {total > 0 && (
           <ResponsiveContainer width={224} height={224}>
@@ -85,11 +84,11 @@ function Legend2({ color, label, value }: { color: string; label: string; value:
 export interface WeeklyPoint {
   label: string;
   date: string;
-  halte: number;
-  gerbang: number;
+  tepat: number;
+  telat: number;
 }
 
-export function WeeklyLocationChart({
+export function WeeklyGateChart({
   data,
   order,
   onOrderChange,
@@ -103,8 +102,8 @@ export function WeeklyLocationChart({
     <Card className="flex h-full flex-col p-6">
       <CardHeader
         icon={<Zap className="mt-0.5 h-4 w-4 text-primary" />}
-        title="Tren Lokasi Tap Mingguan"
-        subtitle="Jumlah sebaran tap di halte sekolah vs gerbang dalam 5 hari sekolah terakhir."
+        title="Tren Kehadiran Mingguan (Gerbang Utama)"
+        subtitle="Jumlah tap tepat waktu vs terlambat di Gerbang Utama dalam 5 hari sekolah terakhir."
         action={
           <div className="flex items-center gap-2">
             <ArrowUpDown className="h-4 w-4 text-subtle" />
@@ -123,8 +122,8 @@ export function WeeklyLocationChart({
             <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: COLORS.axis, fontSize: 11 }} domain={[0, (max: number) => Math.max(4, max)]} />
             <Tooltip {...tooltipStyle} />
             <Legend iconType="square" iconSize={10} wrapperStyle={{ fontSize: 12, color: "#64748B", paddingTop: 12 }} />
-            <Bar dataKey="halte" name="Tap Halte (Rendah Emisi)" fill={COLORS.halte} radius={[4, 4, 0, 0]} maxBarSize={28} />
-            <Bar dataKey="gerbang" name="Tap Gerbang (Potensi Tinggi)" fill={COLORS.gerbang} radius={[4, 4, 0, 0]} maxBarSize={28} />
+            <Bar dataKey="tepat" name="Tepat Waktu (Gerbang Utama)" fill={COLORS.tepat} radius={[4, 4, 0, 0]} maxBarSize={28} />
+            <Bar dataKey="telat" name="Telat (Gerbang Utama)" fill={COLORS.telat} radius={[4, 4, 0, 0]} maxBarSize={28} />
           </BarChart>
         </ResponsiveContainer>
       </div>

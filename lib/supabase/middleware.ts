@@ -7,6 +7,11 @@ const PUBLIC_PATHS = ["/login", "/api/tap", "/api/heartbeat"];
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
+  const path = request.nextUrl.pathname;
+  const isPublic = PUBLIC_PATHS.some((p) => path.startsWith(p));
+  const isApi = path.startsWith("/api");
+  const hasBuiltInAdmin = request.cookies.get("axenta_admin_session")?.value === "1";
+
   if (!isSupabaseConfigured()) return response;
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -25,20 +30,22 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const res = await supabase.auth.getUser();
+    user = res.data.user;
+  } catch {
+    // Abaikan jika Supabase sedang offline/paused dan lanjutkan cek cookie axenta_admin_session
+  }
 
-  const path = request.nextUrl.pathname;
-  const isPublic = PUBLIC_PATHS.some((p) => path.startsWith(p));
-  const isApi = path.startsWith("/api");
+  const isAuthenticated = !!user || hasBuiltInAdmin;
 
-  if (!user && !isPublic && !isApi) {
+  if (!isAuthenticated && !isPublic && !isApi) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     return NextResponse.redirect(redirectUrl);
   }
-  if (user && path === "/login") {
+  if (isAuthenticated && path === "/login") {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/dashboard";
     return NextResponse.redirect(redirectUrl);

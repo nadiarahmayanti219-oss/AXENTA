@@ -11,7 +11,7 @@ export interface DeviceReader {
   sekolah_id: string;
   kode: string;
   nama: string;
-  lokasi: "halte" | "gerbang";
+  lokasi: "gerbang";
   mode_registrasi: boolean;
 }
 
@@ -26,7 +26,7 @@ export async function authenticateDevice(req: NextRequest, kode?: string) {
     .eq("device_key_hash", hashKey(key));
   if (kode) q = q.eq("kode", kode);
   const { data } = await q.maybeSingle();
-  return data ? { admin, reader: data as DeviceReader } : null;
+  return data ? { admin, reader: { ...(data as DeviceReader), lokasi: "gerbang" as const } } : null;
 }
 
 // Rate limit sederhana per instance (30 req/menit/device)

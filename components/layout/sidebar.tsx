@@ -57,7 +57,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { profil } = useApp();
 
   async function logout() {
-    await createClient().auth.signOut();
+    document.cookie = "axenta_admin_session=; path=/; max-age=0";
+    await createClient().auth.signOut().catch(() => {});
     router.replace("/login");
     router.refresh();
   }

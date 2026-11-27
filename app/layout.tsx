@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "AXENTA — Automated Experience for Entry and Attendance",
-  description: "Sistem absensi NFC & asesmen karakter peduli lingkungan siswa.",
+  description: "Sistem absensi siswa berbasis NFC real-time di Gerbang Utama Sekolah.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

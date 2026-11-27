@@ -66,7 +66,7 @@ export default function RekapPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Rekap Kehadiran" subtitle="Pantau rekap kehadiran siswa berdasarkan bulan dan kelas." />
+      <PageHeader title="Rekap Kehadiran" subtitle="Pantau rekap kehadiran siswa di Gerbang Utama berdasarkan bulan dan kelas." />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -122,11 +122,10 @@ export default function RekapPage() {
       >
         {selected && (
           <div className="space-y-4">
-            <div className="grid grid-cols-4 gap-2 text-center">
-              <Mini label="Tepat" value={selected.tepat} cls="text-success" />
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <Mini label="Tepat Waktu" value={selected.tepat} cls="text-success" />
               <Mini label="Telat" value={selected.telat} cls="text-amber-600" />
               <Mini label="Absen" value={selected.absen} cls="text-danger" />
-              <Mini label="Skor Eco" value={selected.eco} cls="text-primary" />
             </div>
             <div className="divide-y divide-line rounded-xl border border-line">
               {stats.days
@@ -141,7 +140,7 @@ export default function RekapPage() {
                       {c.record ? (
                         <span className="flex items-center gap-2">
                           <span className="tabular-nums text-muted">{formatTime(c.record.jam_tap, tz)}</span>
-                          <LokasiChip lokasi={c.record.lokasi} />
+                          <LokasiChip />
                           <StatusChip status={c.record.status} />
                         </span>
                       ) : (

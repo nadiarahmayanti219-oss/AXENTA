@@ -19,8 +19,13 @@ export async function GET(req: NextRequest) {
   if (!/^\d{4}-\d{2}$/.test(bulan)) return NextResponse.json({ ok: false, error: "INVALID_MONTH" }, { status: 400 });
 
   const { start, end } = monthRange(bulan);
-  const [siswa, aturanRes, kehadiran] = isSupabaseConfigured()
-    ? await Promise.all([
+  let siswa: Siswa[] = DEMO_SISWA.filter((s) => !kelas || s.kelas === kelas);
+  let aturanList: AturanJam[] = DEMO_ATURAN;
+  let kehadiran: Kehadiran[] = DEMO_KEHADIRAN;
+
+  if (isSupabaseConfigured()) {
+    try {
+      const [s, a, k] = await Promise.all([
         fetchAll<Siswa>((f, t) => {
           let q = supabase.from("siswa").select("*").eq("aktif", true).order("kelas").order("nama").range(f, t);
           if (kelas) q = q.eq("kelas", kelas);
@@ -30,14 +35,16 @@ export async function GET(req: NextRequest) {
         fetchAll<Kehadiran>((f, t) =>
           supabase.from("kehadiran").select("*").gte("tanggal", start).lte("tanggal", end).range(f, t),
         ),
-      ])
-    : [
-        DEMO_SISWA.filter((s) => !kelas || s.kelas === kelas),
-        { data: DEMO_ATURAN },
-        DEMO_KEHADIRAN,
-      ];
+      ]);
+      siswa = s;
+      aturanList = (a.data ?? []) as AturanJam[];
+      kehadiran = k;
+    } catch {
+      // Gunakan fallback demo jika database belum aktif
+    }
+  }
 
-  const stats = buildMonthStats(siswa, kehadiran, (aturanRes.data ?? []) as AturanJam[], bulan, todayStr(sekolah.timezone));
+  const stats = buildMonthStats(siswa, kehadiran, aturanList, bulan, todayStr(sekolah.timezone));
   const tz = sekolah.timezone;
 
   const header = [
@@ -50,7 +57,6 @@ export async function GET(req: NextRequest) {
     "Telat",
     "Absen",
     "% TW",
-    "Skor Eco",
   ];
   const rows = stats.students.map((s, i) => [
     i + 1,
@@ -68,11 +74,10 @@ export async function GET(req: NextRequest) {
     s.telat,
     s.absen,
     `${s.pctTW}%`,
-    s.eco,
   ]);
 
   const detail = [
-    ["Tanggal", "Nama Siswa", "Kelas", "Jam Tap", "Lokasi", "Bobot Eco", "Status"],
+    ["Tanggal", "Nama Siswa", "Kelas", "Jam Tap", "Titik Tap", "Status"],
     ...kehadiran
       .filter((k) => stats.students.some((s) => s.siswa.id === k.siswa_id))
       .sort((a, b) => a.jam_tap.localeCompare(b.jam_tap))
@@ -83,20 +88,19 @@ export async function GET(req: NextRequest) {
           s?.nama ?? "-",
           s?.kelas ?? "-",
           formatTime(k.jam_tap, tz),
-          k.lokasi === "halte" ? "Halte" : "Gerbang",
-          k.bobot_eco,
+          "Gerbang Utama",
           k.status === "tepat_waktu" ? "Tepat Waktu" : "Telat",
         ];
       }),
   ];
 
-  const title = [[`Rekap Kehadiran ${sekolah.nama} — ${monthLabel(bulan)}${kelas ? ` — Kelas ${kelas}` : ""}`], ["Keterangan: TW = Tepat Waktu, T = Telat, A = Absen, - = belum ada data"], []];
+  const title = [[`Rekap Kehadiran AXENTA — ${sekolah.nama} — ${monthLabel(bulan)}${kelas ? ` — Kelas ${kelas}` : ""}`], ["Keterangan: TW = Tepat Waktu, T = Telat, A = Absen, - = belum ada data"], []];
 
   return workbookResponse(
     [
-      { name: "Rekap", rows: [...title, header, ...rows], widths: [5, 24, 7, 13, ...stats.days.map(() => 9), 11, 7, 7, 7, 9] },
-      { name: "Detail Tap", rows: detail, widths: [12, 24, 7, 9, 10, 10, 12] },
+      { name: "Rekap", rows: [...title, header, ...rows], widths: [5, 24, 7, 13, ...stats.days.map(() => 9), 11, 7, 7, 7] },
+      { name: "Detail Tap", rows: detail, widths: [12, 24, 7, 9, 16, 12] },
     ],
-    `Rekap_Kehadiran_${kelas || "Semua"}_${bulan}.xlsx`,
+    `Rekap_Kehadiran_AXENTA_${kelas || "Semua"}_${bulan}.xlsx`,
   );
 }

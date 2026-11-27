@@ -1,7 +1,7 @@
 -- =====================================================================
 -- AXENTA — Automated Experience for Entry and Attendance
--- Migration 0001: skema inti, RLS, realtime, RPC
--- Jalankan di Supabase Dashboard > SQL Editor (atau `supabase db push`)
+-- Migration 0001: skema inti, RLS, realtime, RPC (Gerbang Utama Sekolah)
+-- Jalankan di Supabase Dashboard > SQL Editor
 -- =====================================================================
 
 create extension if not exists pgcrypto with schema extensions;
@@ -13,8 +13,6 @@ create table if not exists public.sekolah (
   id            uuid primary key default gen_random_uuid(),
   nama          text not null,
   timezone      text not null default 'Asia/Jakarta',
-  bobot_halte   int  not null default 10,
-  bobot_gerbang int  not null default 2,
   created_at    timestamptz not null default now()
 );
 
@@ -44,7 +42,7 @@ create table if not exists public.nfc_reader (
   sekolah_id       uuid not null references public.sekolah(id) on delete cascade,
   kode             text not null unique,
   nama             text not null,
-  lokasi           text not null check (lokasi in ('halte','gerbang')),
+  lokasi           text not null default 'gerbang' check (lokasi in ('gerbang')),
   device_key_hash  text not null,
   mode_registrasi  boolean not null default false,
   last_uid         text,
@@ -71,8 +69,7 @@ create table if not exists public.kehadiran (
   reader_id  uuid references public.nfc_reader(id) on delete set null,
   tanggal    date not null,
   jam_tap    timestamptz not null,
-  lokasi     text not null check (lokasi in ('halte','gerbang')),
-  bobot_eco  int  not null default 0,
+  lokasi     text not null default 'gerbang' check (lokasi in ('gerbang')),
   status     text not null check (status in ('tepat_waktu','telat')),
   created_at timestamptz not null default now(),
   constraint kehadiran_harian_unik unique (siswa_id, tanggal)

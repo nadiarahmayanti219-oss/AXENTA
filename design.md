@@ -37,7 +37,7 @@
 
 | Status | Token | Hex | Contoh |
 |---|---|---|---|
-| Tepat Waktu / Halte (Rendah Emisi) / Sukses | `success` | `#15803D` | Dot legenda, teks "0 siswa (0%)" |
+| Tepat Waktu / Sukses | `success` | `#15803D` | Dot legenda, teks "0 siswa (0%)" |
 | Telat | `warning` | `#F59E0B` | Legenda "Telat" |
 | Gerbang (Potensi Tinggi) / Bahaya | `danger` | `#DC2626` | % TW rendah, "Telat" di aturan jam, Hapus |
 | Absen / Netral | `neutral` | `#94A3B8` | Legenda "Absen", status offline |
@@ -176,13 +176,13 @@ Font: **Inter** (via `next/font/google`), fallback `system-ui, sans-serif`.
    - Kartu 3 & 4: putih, ikon dalam lingkaran `primary-50` (`AlertTriangle`, `CalendarDays`), badge abu, angka `display` `text`, caption muted ("siswa di bulan ini", "hari efektif").
 2. **Baris 2** — grid `5fr / 7fr`:
    - **Distribusi Kehadiran**: donut chart (Recharts `PieChart`, innerRadius 70%), total di tengah (angka 24px + "TOTAL" overline). Legenda bawah: dot hijau "Tepat Waktu 0%", dot kuning "Telat 0%", dot abu "Absen 0%".
-   - **Aktivitas Terbaru**: tabel kolom SISWA · KELAS · LOKASI & BOBOT · JAM TAP · TANGGAL · STATUS. Lokasi ditampilkan chip (hijau "Halte · +10", merah "Gerbang · +2"); status chip (hijau "Tepat Waktu", kuning "Telat"). Baris baru muncul dengan animasi highlight `primary-50` 1.5 detik.
-3. **Divider** + section header: ikon `Leaf` hijau + `h2` "Analisis Asesmen Karakter Lingkungan (Eco-Awareness)" + subjudul.
+   - **Aktivitas Terbaru**: tabel kolom SISWA · KELAS · TITIK TAP · JAM TAP · TANGGAL · STATUS. Titik tap ditampilkan chip ("Gerbang Utama"); status chip (hijau "Tepat Waktu", kuning "Telat"). Baris baru muncul dengan animasi highlight `primary-50` 1.5 detik.
+3. **Divider** + section header: ikon `ShieldCheck` biru + `h2` "Monitoring Kehadiran Gerbang Utama Sekolah" + subjudul.
 4. **Baris 3** — grid `5fr / 7fr`:
    - Kolom kiri (stack):
-     - **Sebaran Titik Tap Hari Ini**: label overline; dua baris (dot + label + nilai berwarna di kanan) dengan progress bar 6px abu → isi hijau/merah; info box metodologi di bawah.
-     - **Leaderboard Skor Eco Siswa**: ikon `Award` kuning, overline; list peringkat (no., avatar inisial, nama, kelas, skor kanan). Top 3 diberi medali emas/perak/perunggu.
-   - Kolom kanan: **Tren Lokasi Tap Mingguan** — ikon `Zap` biru, judul, subjudul; select urutan di kanan dengan ikon `ArrowUpDown`; grouped bar chart (hijau Halte, merah Gerbang), grid horizontal putus-putus `#EEF2F7`, label sumbu "Sel 10", "Rab 11"; legenda bawah dengan kotak warna.
+     - **Ringkasan Tap Gerbang Utama Hari Ini**: label overline; dua baris (Tepat Waktu & Terlambat) dengan progress bar; info box Gerbang Utama di bawah.
+     - **Siswa Paling Tepat Waktu**: ikon `Award` kuning, overline; list peringkat (no., avatar inisial, nama, kelas, persentase tepat waktu).
+   - Kolom kanan: **Tren Kehadiran Mingguan (Gerbang Utama)** — ikon `Zap` biru, judul, subjudul; select urutan di kanan dengan ikon `ArrowUpDown`; grouped bar chart (hijau Tepat Waktu, kuning Telat), grid horizontal putus-putus `#EEF2F7`, label sumbu "Sel 10", "Rab 11"; legenda bawah dengan kotak warna.
 
 ### 7.2 Rekap Kehadiran
 - **Toolbar**: kiri — month picker + select "Semua Kelas"; kanan — "Hapus Kehadiran" (danger outline) + "Export Excel" (outline, ikon `Download`).
@@ -223,7 +223,7 @@ Font: **Inter** (via `next/font/google`), fallback `system-ui, sans-serif`.
 | Grafik | Tipe | Warna |
 |---|---|---|
 | Distribusi Kehadiran | Donut (`PieChart`) | `#15803D`, `#F59E0B`, `#94A3B8` |
-| Tren Lokasi Tap Mingguan | Grouped `BarChart` | Halte `#15803D`, Gerbang `#DC2626` |
+| Tren Kehadiran Mingguan (Gerbang Utama) | Grouped `BarChart` | Tepat Waktu `#15803D`, Telat `#F59E0B` |
 | Grafik Harian | Stacked `BarChart` | Tepat `#15803D`, Telat `#F59E0B` |
 | Detail Jam Tap | `ScatterChart` (x: tanggal, y: jam) + garis referensi tenggat merah putus-putus | `#2563EB` |
 

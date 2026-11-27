@@ -1,13 +1,11 @@
 export type Role = "admin" | "guru";
-export type Lokasi = "halte" | "gerbang";
+export type Lokasi = "gerbang";
 export type StatusHadir = "tepat_waktu" | "telat";
 
 export interface Sekolah {
   id: string;
   nama: string;
   timezone: string;
-  bobot_halte: number;
-  bobot_gerbang: number;
 }
 
 export interface Profil {
@@ -58,7 +56,6 @@ export interface Kehadiran {
   tanggal: string; // YYYY-MM-DD
   jam_tap: string; // ISO
   lokasi: Lokasi;
-  bobot_eco: number;
   status: StatusHadir;
   created_at?: string;
 }

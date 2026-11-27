@@ -8,12 +8,8 @@ import { cn } from "@/lib/cn";
 import { formatDate, formatTime } from "@/lib/time";
 import type { KehadiranWithSiswa } from "@/lib/types";
 
-export function LokasiChip({ lokasi, bobot }: { lokasi: "halte" | "gerbang"; bobot?: number }) {
-  return lokasi === "halte" ? (
-    <Badge tone="success">Halte{bobot !== undefined && ` · +${bobot}`}</Badge>
-  ) : (
-    <Badge tone="danger">Gerbang{bobot !== undefined && ` · +${bobot}`}</Badge>
-  );
+export function LokasiChip() {
+  return <Badge tone="primary">Gerbang Utama</Badge>;
 }
 
 export function StatusChip({ status }: { status: "tepat_waktu" | "telat" }) {
@@ -35,7 +31,7 @@ export function RecentActivityTable({
     <Card className="flex flex-col p-6">
       <CardHeader
         title="Aktivitas Terbaru"
-        subtitle="Tap NFC terakhir yang tercatat"
+        subtitle="Tap NFC terakhir yang tercatat di Gerbang Utama"
         action={
           <Link href="/rekap" className="text-[13px] font-medium text-primary hover:underline">
             Lihat Semua Data
@@ -46,7 +42,7 @@ export function RecentActivityTable({
         <table className="w-full min-w-[560px] text-left text-[13px]">
           <thead>
             <tr className={cn("text-subtle", rows.length > 0 && "border-b border-line")}>
-              {["Siswa", "Kelas", "Lokasi & Bobot", "Jam Tap", "Tanggal", "Status"].map((h) => (
+              {["Siswa", "Kelas", "Titik Tap", "Jam Tap", "Tanggal", "Status"].map((h) => (
                 <th key={h} scope="col" className="overline py-2 pr-3 font-semibold">
                   {h}
                 </th>
@@ -68,7 +64,7 @@ export function RecentActivityTable({
                   <td className="py-3 pr-3 font-medium text-ink">{r.siswa?.nama ?? "-"}</td>
                   <td className="py-3 pr-3 text-muted">{r.siswa?.kelas ?? "-"}</td>
                   <td className="py-3 pr-3">
-                    <LokasiChip lokasi={r.lokasi} bobot={r.bobot_eco} />
+                    <LokasiChip />
                   </td>
                   <td className="py-3 pr-3 font-medium tabular-nums text-ink">{formatTime(r.jam_tap, tz)}</td>
                   <td className="py-3 pr-3 text-muted">{formatDate(r.tanggal)}</td>
@@ -79,6 +75,7 @@ export function RecentActivityTable({
               ))}
           </tbody>
         </table>
+        {!loading && rows.length === 0 && <EmptyState>Belum ada aktivitas absensi terbaru.</EmptyState>}
       </div>
     </Card>
   );

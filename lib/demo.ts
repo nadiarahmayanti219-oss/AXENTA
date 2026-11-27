@@ -17,19 +17,18 @@ export const DEMO_SEKOLAH: Sekolah = {
   id: DEMO_SEKOLAH_ID,
   nama: "SDI AL-Irsyadiah",
   timezone: "Asia/Jakarta",
-  bobot_halte: 10,
-  bobot_gerbang: 2,
 };
 
 export const DEMO_PROFIL: Profil = {
   id: "00000000-0000-0000-0000-000000000099",
   sekolah_id: DEMO_SEKOLAH_ID,
-  nama: "AXENTA",
+  nama: "Admin AXENTA",
   role: "admin",
 };
 
 const NAMES: [string, string][] = [
   ["Ahmad Rasyid", "8159FF7B"],
+  ["Siswa Tes IoT AXENTA", "A3B4C5D6"],
   ["Aisyah Putri", "NFC-4A-002"],
   ["Bagas Prasetyo", "NFC-4A-003"],
   ["Citra Maharani", "NFC-4A-004"],
@@ -71,22 +70,11 @@ export const DEMO_ATURAN: AturanJam[] = Array.from({ length: 7 }, (_, i) => ({
   sekolah_id: DEMO_SEKOLAH_ID,
   hari: i + 1,
   jam_masuk: "07:00:00",
-  tenggat_absensi: "07:00:00",
+  tenggat_absensi: "07:15:00",
   aktif: i < 5,
 }));
 
 export const DEMO_READERS: NfcReader[] = [
-  {
-    id: "demo-reader-halte",
-    sekolah_id: DEMO_SEKOLAH_ID,
-    kode: "RDR-HALTE-01",
-    nama: "Reader Halte Bus Sekolah",
-    lokasi: "halte",
-    mode_registrasi: false,
-    last_uid: null,
-    last_uid_at: null,
-    last_seen: null,
-  },
   {
     id: "demo-reader-gerbang",
     sekolah_id: DEMO_SEKOLAH_ID,
